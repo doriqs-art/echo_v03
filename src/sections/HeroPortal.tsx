@@ -269,7 +269,7 @@ export default function HeroPortal() {
         <p
           className="select-none"
           style={{
-            fontFamily: 'var(--font-michroma), sans-serif',
+            fontFamily: 'var(--font-body), sans-serif',
             fontSize: 'clamp(0.6rem, 1.1vw, 0.9rem)',
             letterSpacing: '0.25em',
             color: 'rgba(255,255,255,0.5)',
@@ -293,7 +293,7 @@ export default function HeroPortal() {
             background: 'transparent',
             border: '1px solid #ffffff',
             color: '#ffffff',
-            fontFamily: 'var(--font-orbitron), sans-serif',
+            fontFamily: 'var(--font-body), sans-serif',
             fontSize: 'clamp(0.8rem, 1.4vw, 1rem)',
             letterSpacing: '0.05em',
             cursor: 'pointer',
@@ -339,7 +339,7 @@ export default function HeroPortal() {
             caretColor: '#ffffff',
             textAlign: 'left',
             padding: '0 28px',
-            fontFamily: 'var(--font-orbitron), sans-serif',
+            fontFamily: 'var(--font-body), sans-serif',
             fontWeight: 400,
             fontSize: 'clamp(0.9rem, 3.4vw, 23px)',
             outline: 'none',
@@ -353,7 +353,7 @@ export default function HeroPortal() {
           <p
             className="select-none"
             style={{
-              fontFamily: 'var(--font-michroma), sans-serif',
+              fontFamily: 'var(--font-body), sans-serif',
               fontSize: 'clamp(0.9rem, 1.6vw, 1.25rem)',
               letterSpacing: '0.15em',
               color: 'rgba(255,255,255,0.8)',
@@ -408,7 +408,7 @@ export default function HeroPortal() {
             WebkitBackdropFilter: 'blur(4px)',
             boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.2)',
             color: '#ffffff',
-            fontFamily: 'var(--font-michroma), sans-serif',
+            fontFamily: 'var(--font-body), sans-serif',
             fontSize: '0.8rem',
             letterSpacing: '0.02em',
             cursor: 'pointer',
