@@ -396,7 +396,7 @@ export default function HeroPortal() {
           style={{
             position: 'absolute',
             left: 'clamp(1.25rem, 4vw, 2.5rem)',
-            top: 'clamp(1.25rem, 4vh, 2.5rem)',
+            bottom: 'clamp(1.25rem, 4vh, 2.5rem)',
             zIndex: 55,
             height: '44px',
             padding: '0 26px',
