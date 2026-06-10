@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import LogoBlur from '@/components/LogoBlur';
 
-const MICHROMA = 'var(--font-michroma), sans-serif';
+const BODY_FONT = 'var(--font-body), sans-serif';
 const SYS_WIDTH = 'min(440px, 100%)';
 const BUBBLE_FONT = 'clamp(0.8rem, 1vw, 0.95rem)';
 
@@ -11,7 +11,7 @@ const sysBox: React.CSSProperties = {
   background: 'rgba(255,255,255,0.05)',
   borderRadius: '18px 18px 18px 4px',
   padding: '12px 18px',
-  fontFamily: MICHROMA,
+  fontFamily: BODY_FONT,
   fontSize: BUBBLE_FONT,
   lineHeight: 1.45,
   color: 'rgba(255,255,255,0.72)',
@@ -36,7 +36,7 @@ function UserBubble({ children, placeholder }: { children: React.ReactNode; plac
         border: '1px solid rgba(255,255,255,0.25)',
         borderRadius: '18px 18px 4px 18px',
         padding: '12px 18px',
-        fontFamily: MICHROMA,
+        fontFamily: BODY_FONT,
         fontSize: BUBBLE_FONT,
         lineHeight: 1.45,
         color: placeholder ? 'rgba(255,255,255,0.35)' : '#ffffff',
@@ -187,7 +187,7 @@ export default function MemoryScreen({
         border: '1px solid rgba(255,255,255,0.25)',
         borderRadius: '18px 18px 4px 18px',
         padding: '12px 18px',
-        fontFamily: MICHROMA,
+        fontFamily: BODY_FONT,
         fontSize: BUBBLE_FONT,
         color: '#ffffff',
         caretColor: '#ffffff',
@@ -217,7 +217,7 @@ export default function MemoryScreen({
       <div className="mx-auto w-full max-w-[1150px] px-6 pb-28 pt-4">
         <p
           style={{
-            fontFamily: MICHROMA,
+            fontFamily: BODY_FONT,
             fontSize: 'clamp(0.85rem, 1.3vw, 1.05rem)',
             color: 'rgba(255,255,255,0.62)',
             marginBottom: '1.5rem',
@@ -265,7 +265,7 @@ export default function MemoryScreen({
                         border: '1px solid rgba(255,255,255,0.18)',
                         background: active ? '#ffffff' : '#131313',
                         color: active ? '#121212' : '#ffffff',
-                        fontFamily: MICHROMA,
+                        fontFamily: BODY_FONT,
                         fontSize: 'clamp(0.72rem, 0.9vw, 0.85rem)',
                         cursor: 'pointer',
                       }}
@@ -319,7 +319,7 @@ export default function MemoryScreen({
                     >
                       <UploadIcon />
                     </div>
-                    <span style={{ fontFamily: MICHROMA, fontSize: BUBBLE_FONT, color: 'rgba(255,255,255,0.62)' }}>
+                    <span style={{ fontFamily: BODY_FONT, fontSize: BUBBLE_FONT, color: 'rgba(255,255,255,0.62)' }}>
                       Drag her photo here
                     </span>
                     <button
@@ -332,7 +332,7 @@ export default function MemoryScreen({
                         padding: '8px 20px',
                         background: 'transparent',
                         color: '#ffffff',
-                        fontFamily: MICHROMA,
+                        fontFamily: BODY_FONT,
                         fontSize: BUBBLE_FONT,
                         cursor: 'pointer',
                       }}
@@ -370,7 +370,7 @@ export default function MemoryScreen({
                       </span>
                     </div>
                     <div className="flex flex-col items-start gap-2">
-                      <span style={{ fontFamily: MICHROMA, fontSize: 'clamp(0.9rem, 1.2vw, 1.05rem)', color: '#ffffff' }}>{fileName}</span>
+                      <span style={{ fontFamily: BODY_FONT, fontSize: 'clamp(0.9rem, 1.2vw, 1.05rem)', color: '#ffffff' }}>{fileName}</span>
                       <button
                         type="button"
                         onClick={() => fileRef.current?.click()}
@@ -382,7 +382,7 @@ export default function MemoryScreen({
                           border: 'none',
                           cursor: 'pointer',
                           color: 'rgba(255,255,255,0.42)',
-                          fontFamily: MICHROMA,
+                          fontFamily: BODY_FONT,
                           fontSize: 'clamp(0.8rem, 1.1vw, 1.05rem)',
                         }}
                       >
@@ -414,7 +414,7 @@ export default function MemoryScreen({
                 padding: '14px 16px 14px 24px',
               }}
             >
-              <span style={{ fontFamily: MICHROMA, fontSize: 'clamp(0.95rem, 1.3vw, 1.15rem)', color: '#ffffff' }}>
+              <span style={{ fontFamily: BODY_FONT, fontSize: 'clamp(0.95rem, 1.3vw, 1.15rem)', color: '#ffffff' }}>
                 Create {name}&apos;s echo
               </span>
               <button
@@ -430,7 +430,7 @@ export default function MemoryScreen({
                   border: 'none',
                   borderRadius: '999px',
                   padding: '10px 22px',
-                  fontFamily: MICHROMA,
+                  fontFamily: BODY_FONT,
                   fontSize: 'clamp(0.85rem, 1vw, 1rem)',
                   cursor: 'pointer',
                 }}
