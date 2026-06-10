@@ -6,7 +6,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import LogoBlur from '@/components/LogoBlur';
 
-const MICHROMA = 'var(--font-michroma), sans-serif';
+const BODY_FONT = 'var(--font-body), sans-serif';
 
 const BEATS: Array<{ title: string; sub: string }> = [
   { title: 'Building your core memory…', sub: 'THIS WILL TAKE A MINUTE. COME BACK LATER' },
@@ -292,7 +292,7 @@ export default function GeneratingScreen({
           ref={titleRef}
           className="echo-rise select-none text-center"
           style={{
-            fontFamily: MICHROMA,
+            fontFamily: BODY_FONT,
             fontSize: 'clamp(1.05rem, 1.85vw, 25px)',
             lineHeight: 1.45,
             color: 'rgba(255,255,255,0.72)',
@@ -306,7 +306,7 @@ export default function GeneratingScreen({
           className="echo-rise select-none text-center"
           style={{
             marginTop: '10px',
-            fontFamily: 'var(--font-inter), sans-serif',
+            fontFamily: 'var(--font-body), sans-serif',
             fontSize: '14px',
             lineHeight: '17px',
             letterSpacing: '0.13em',
