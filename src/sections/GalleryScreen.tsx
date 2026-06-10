@@ -49,7 +49,7 @@ type TileKind = (typeof TILE_KINDS)[number];
 
 const CARD_TIME: CSSProperties = {
   flex: 'none',
-  fontFamily: 'var(--font-michroma), sans-serif',
+  fontFamily: 'var(--font-body), sans-serif',
   fontSize: '0.7rem',
   color: 'rgba(255,255,255,0.6)',
 };
@@ -779,7 +779,7 @@ export default function GalleryScreen({ photoUrl, name }: { photoUrl: string | n
         className="pointer-events-none absolute left-1/2 bottom-[8%] z-20 select-none text-center"
         style={{
           transform: 'translateX(-50%)',
-          fontFamily: 'var(--font-michroma), sans-serif',
+          fontFamily: 'var(--font-body), sans-serif',
           fontSize: 'clamp(0.9rem, 1.6vw, 1.25rem)',
           letterSpacing: '0.12em',
           color: '#ffffff',
@@ -816,7 +816,7 @@ export default function GalleryScreen({ photoUrl, name }: { photoUrl: string | n
           WebkitBackdropFilter: 'blur(4px)',
           boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.2)',
           color: '#ffffff',
-          fontFamily: 'var(--font-michroma), sans-serif',
+          fontFamily: 'var(--font-body), sans-serif',
           fontSize: '0.8rem',
           letterSpacing: '0.02em',
           cursor: preserved.length > 0 || filtered ? 'pointer' : 'default',
@@ -839,7 +839,7 @@ export default function GalleryScreen({ photoUrl, name }: { photoUrl: string | n
           border: '1px solid rgba(255,255,255,0.18)',
           backdropFilter: 'blur(6px)',
           WebkitBackdropFilter: 'blur(6px)',
-          fontFamily: 'var(--font-michroma), sans-serif',
+          fontFamily: 'var(--font-body), sans-serif',
           fontSize: '0.85rem',
           letterSpacing: '0.08em',
           color: '#ffffff',
@@ -1069,7 +1069,7 @@ export default function GalleryScreen({ photoUrl, name }: { photoUrl: string | n
               className="select-none text-center"
               style={{
                 marginTop: '26px',
-                fontFamily: 'var(--font-michroma), sans-serif',
+                fontFamily: 'var(--font-body), sans-serif',
                 fontSize: 'clamp(1.05rem, 2.3vw, 1.6rem)',
                 color: '#ffffff',
               }}
@@ -1098,7 +1098,7 @@ export default function GalleryScreen({ photoUrl, name }: { photoUrl: string | n
                     border: `1px solid ${isPreserved ? 'rgba(232,93,53,0.9)' : 'rgba(255,255,255,0.3)'}`,
                     background: isPreserved ? 'rgba(232,93,53,0.18)' : 'rgba(255,255,255,0.05)',
                     color: '#ffffff',
-                    fontFamily: 'var(--font-michroma), sans-serif',
+                    fontFamily: 'var(--font-body), sans-serif',
                     fontSize: '0.76rem',
                     letterSpacing: '0.04em',
                     cursor: 'pointer',
