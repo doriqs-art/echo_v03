@@ -1,39 +1,21 @@
 import type { Metadata } from 'next';
-import { Montserrat_Alternates, Sora, Syncopate, Michroma, Orbitron } from 'next/font/google';
+import { Montserrat_Alternates, Syncopate } from 'next/font/google';
 import './globals.css';
 import SmoothScroll from '@/components/SmoothScroll';
 import Cursor from '@/components/Cursor';
 import SoundFx from '@/components/SoundFx';
 import NoiseOverlay from '@/components/NoiseOverlay';
 
-const montserratAlternates = Montserrat_Alternates({
+const montserratAlt = Montserrat_Alternates({
   variable: '--font-body',
   subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
-});
-
-const sora = Sora({
-  variable: '--font-sora',
-  subsets: ['latin'],
-  weight: ['400', '600', '700', '800'],
+  weight: ['400', '500', '600', '700', '800'],
 });
 
 const syncopate = Syncopate({
   variable: '--font-syncopate',
   subsets: ['latin'],
   weight: ['400', '700'],
-});
-
-const michroma = Michroma({
-  variable: '--font-michroma',
-  subsets: ['latin'],
-  weight: ['400'],
-});
-
-const orbitron = Orbitron({
-  variable: '--font-orbitron',
-  subsets: ['latin'],
-  weight: ['400', '500', '700'],
 });
 
 export const metadata: Metadata = {
@@ -48,7 +30,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${montserratAlternates.variable} ${sora.variable} ${syncopate.variable} ${michroma.variable} ${orbitron.variable} antialiased`}
+      className={`${montserratAlt.variable} ${syncopate.variable} antialiased`}
     >
       <body className="bg-ink text-bone">
         <NoiseOverlay />
