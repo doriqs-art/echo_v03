@@ -237,7 +237,7 @@ export default function MemoriesScreen({
         className="pointer-events-none absolute left-1/2 bottom-[8%] z-20 select-none text-center"
         style={{
           transform: 'translateX(-50%)',
-          fontFamily: 'var(--font-michroma), sans-serif',
+          fontFamily: 'var(--font-body), sans-serif',
           fontSize: 'clamp(0.9rem, 1.6vw, 1.25rem)',
           letterSpacing: '0.12em',
           color: '#ffffff',
@@ -257,7 +257,7 @@ export default function MemoriesScreen({
             background: 'transparent',
             border: '1px solid rgba(255,255,255,0.35)',
             color: 'rgba(255,255,255,0.85)',
-            fontFamily: 'var(--font-michroma), sans-serif',
+            fontFamily: 'var(--font-body), sans-serif',
             fontSize: '0.75rem',
             letterSpacing: '0.12em',
             cursor: 'pointer',
@@ -273,7 +273,7 @@ export default function MemoriesScreen({
         className="pointer-events-none fixed left-0 top-0 z-30 select-none whitespace-nowrap"
         style={{
           opacity: 0,
-          fontFamily: 'var(--font-michroma), sans-serif',
+          fontFamily: 'var(--font-body), sans-serif',
           fontSize: '0.95rem',
           letterSpacing: '0.06em',
           color: '#ffffff',
@@ -327,7 +327,7 @@ export default function MemoriesScreen({
             <div style={{ padding: '20px 22px 24px' }}>
               <div
                 style={{
-                  fontFamily: 'var(--font-syncopate), sans-serif',
+                  fontFamily: 'var(--font-body), sans-serif',
                   fontWeight: 700,
                   fontSize: '1.35rem',
                   letterSpacing: '-0.01em',
@@ -341,7 +341,7 @@ export default function MemoriesScreen({
                   marginTop: '6px',
                   display: 'flex',
                   gap: '12px',
-                  fontFamily: 'var(--font-michroma), sans-serif',
+                  fontFamily: 'var(--font-body), sans-serif',
                   fontSize: '0.7rem',
                   letterSpacing: '0.08em',
                   color: 'rgba(255,255,255,0.55)',
@@ -354,7 +354,7 @@ export default function MemoriesScreen({
               <p
                 style={{
                   marginTop: '14px',
-                  fontFamily: 'var(--font-michroma), sans-serif',
+                  fontFamily: 'var(--font-body), sans-serif',
                   fontSize: '0.85rem',
                   lineHeight: 1.5,
                   color: 'rgba(255,255,255,0.8)',
@@ -379,7 +379,7 @@ export default function MemoriesScreen({
                   background: '#ffffff',
                   color: '#121212',
                   border: 'none',
-                  fontFamily: 'var(--font-michroma), sans-serif',
+                  fontFamily: 'var(--font-body), sans-serif',
                   fontSize: '0.8rem',
                   letterSpacing: '0.1em',
                   cursor: 'pointer',
