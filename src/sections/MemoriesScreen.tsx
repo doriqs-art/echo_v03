@@ -14,9 +14,11 @@ const CUBE = 0.78;
 export default function MemoriesScreen({
   onBack,
   onOpen,
+  onLogoClick,
 }: {
   onBack?: () => void;
   onOpen?: (memory: MemoryEntry) => void;
+  onLogoClick?: () => void;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const labelRef = useRef<HTMLDivElement>(null);
@@ -230,7 +232,14 @@ export default function MemoriesScreen({
       />
 
       <div className="absolute left-1/2 top-[5%] z-20" style={{ transform: 'translateX(-50%)' }}>
-        <LogoBlur text="ECHO" fontMin={28.8} fontVw={0.045} fontMax={57.6} blur={6} circleSize={0.7} />
+        <button
+          type="button"
+          onClick={onLogoClick}
+          aria-label="Back to start"
+          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+        >
+          <LogoBlur text="ECHO" fontMin={28.8} fontVw={0.045} fontMax={57.6} blur={6} circleSize={0.7} />
+        </button>
       </div>
 
       <p
