@@ -421,6 +421,7 @@ export default function HeroPortal() {
       {phase === 'memories' && (
         <MemoriesScreen
           onBack={() => setPhase('gallery')}
+          onLogoClick={() => setPhase('prompt')}
           onOpen={(m) => {
             setMemory({ name: m.name, photoUrl: m.cover });
             setPhase('gallery');
