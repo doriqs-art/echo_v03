@@ -1126,7 +1126,7 @@ export default function GalleryScreen({ photoUrl, name }: { photoUrl: string | n
                     cursor: 'pointer',
                   }}
                 >
-                  {isPreserved ? 'Preserved ✓' : 'Preserve to Artifacts'}
+                  {isPreserved ? `Saved to ${name ? `${name}'s` : 'your'} echo ✓` : `Save to ${name ? `${name}'s` : 'your'} echo`}
                 </button>
               );
             })()}
