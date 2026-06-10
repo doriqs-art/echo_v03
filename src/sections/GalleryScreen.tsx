@@ -42,8 +42,6 @@ const IDLE_SPIN = 0.12;
 const CENTER_MODEL = '/models/dog_head_simple_model.glb';
 const CENTER_SIZE = 2.4;
 
-const GRID_CELL = 18 / 28;
-
 const TILE_KINDS = ['photo', 'video', 'recording'] as const;
 type TileKind = (typeof TILE_KINDS)[number];
 
@@ -385,15 +383,12 @@ export default function GalleryScreen({ photoUrl, name }: { photoUrl: string | n
     const tiles: THREE.Mesh[] = [];
 
     const gridUniforms = {
-      uGridScale: { value: new THREE.Vector2(28.0, 28.0) },
-      uLineWidth: { value: 0.5 },
       uEdgeWidth: { value: 0.14 },
       uEdgeAmp: { value: 1.35 },
       uCenterRadius: { value: 0.22 },
       uCenterAmp: { value: 0.9 },
       uCenter: { value: new THREE.Vector2(0.5, 0.5) },
       uTime: { value: 0 },
-      uScrollSpeed: { value: 0.01 },
     };
     const gridGeo = new THREE.PlaneGeometry(1, 1, 200, 200);
     const gridMat = new THREE.ShaderMaterial({
@@ -416,16 +411,12 @@ export default function GalleryScreen({ photoUrl, name }: { photoUrl: string | n
       `,
       fragmentShader: `
         varying vec2 vUv;
-        uniform vec2 uGridScale; uniform float uLineWidth; uniform float uTime; uniform float uScrollSpeed;
-        float gridLine(float coord, float width) {
-          float fw = fwidth(coord);
-          float p = abs(fract(coord - 0.5) - 0.5);
-          return 1.0 - smoothstep(width * fw, (width + 1.0) * fw, p);
-        }
+        uniform float uTime;
         void main() {
-          vec2 uv = (vUv + vec2(uTime * uScrollSpeed, 0.0)) * uGridScale;
-          float g = max(gridLine(uv.x, uLineWidth), gridLine(uv.y, uLineWidth));
-          vec3 col = mix(vec3(0.075), vec3(0.16), g);
+          float dCenter = distance(vUv, vec2(0.5, 0.5));
+          float glow = 1.0 - smoothstep(0.0, 0.65, dCenter);
+          float pulse = 1.0 + 0.06 * sin(uTime * 0.4);
+          vec3 col = mix(vec3(0.075), vec3(0.13), glow * 0.55 * pulse);
           gl_FragColor = vec4(col, 1.0);
         }
       `,
@@ -442,7 +433,6 @@ export default function GalleryScreen({ photoUrl, name }: { photoUrl: string | n
       const sx = visW * 1.12;
       const sy = visH * 1.12;
       grid.scale.set(sx, sy, 1);
-      gridUniforms.uGridScale.value.set(sx / GRID_CELL, sy / GRID_CELL);
     };
     sizeGrid();
 
