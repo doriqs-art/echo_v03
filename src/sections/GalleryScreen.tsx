@@ -453,7 +453,14 @@ export default function GalleryScreen({ photoUrl, name }: { photoUrl: string | n
       s.quadraticCurveTo(-w / 2, h / 2, -w / 2, h / 2 - r);
       s.lineTo(-w / 2, -h / 2 + r);
       s.quadraticCurveTo(-w / 2, -h / 2, -w / 2 + r, -h / 2);
-      return new THREE.ShapeGeometry(s);
+      const geo = new THREE.ShapeGeometry(s);
+      const pos = geo.attributes.position;
+      const uv = geo.attributes.uv;
+      for (let i = 0; i < pos.count; i++) {
+        uv.setXY(i, (pos.getX(i) + w / 2) / w, (pos.getY(i) + h / 2) / h);
+      }
+      uv.needsUpdate = true;
+      return geo;
     };
     const photoGeo = roundedRect(PHOTO_SIZE, PHOTO_SIZE, 0.07);
     const videoGeo = new THREE.PlaneGeometry(VIDEO_W, VIDEO_H);
