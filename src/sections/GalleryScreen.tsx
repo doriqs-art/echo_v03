@@ -442,7 +442,20 @@ export default function GalleryScreen({ photoUrl, name }: { photoUrl: string | n
     let center: THREE.Group | null = null;
     let ready = false;
 
-    const photoGeo = new THREE.PlaneGeometry(PHOTO_SIZE, PHOTO_SIZE);
+    const roundedRect = (w: number, h: number, r: number) => {
+      const s = new THREE.Shape();
+      s.moveTo(-w / 2 + r, -h / 2);
+      s.lineTo(w / 2 - r, -h / 2);
+      s.quadraticCurveTo(w / 2, -h / 2, w / 2, -h / 2 + r);
+      s.lineTo(w / 2, h / 2 - r);
+      s.quadraticCurveTo(w / 2, h / 2, w / 2 - r, h / 2);
+      s.lineTo(-w / 2 + r, h / 2);
+      s.quadraticCurveTo(-w / 2, h / 2, -w / 2, h / 2 - r);
+      s.lineTo(-w / 2, -h / 2 + r);
+      s.quadraticCurveTo(-w / 2, -h / 2, -w / 2 + r, -h / 2);
+      return new THREE.ShapeGeometry(s);
+    };
+    const photoGeo = roundedRect(PHOTO_SIZE, PHOTO_SIZE, 0.07);
     const videoGeo = new THREE.PlaneGeometry(VIDEO_W, VIDEO_H);
     disposables.push(photoGeo, videoGeo);
     const texLoader = new THREE.TextureLoader();
@@ -527,7 +540,10 @@ export default function GalleryScreen({ photoUrl, name }: { photoUrl: string | n
     const n = Math.max(1, visible.length);
     const ringR = Math.min(3.7, Math.max(3.0, n / (2 * Math.PI) + 0.9));
     visible.forEach((m, idx) => {
-      const tile = new THREE.Mesh(m.geo, m.mat);
+      const tileMat = m.mat.clone();
+      tileMat.transparent = true;
+      disposables.push(tileMat);
+      const tile = new THREE.Mesh(m.geo, tileMat);
       tile.userData.id = m.id;
       tile.userData.kind = m.kind;
       tile.userData.src = m.src;
@@ -591,6 +607,7 @@ export default function GalleryScreen({ photoUrl, name }: { photoUrl: string | n
     let frame = 0;
     let last = performance.now();
     const clockStart = last;
+    const tileWorldPos = new THREE.Vector3();
 
     const animate = () => {
       frame = requestAnimationFrame(animate);
@@ -643,6 +660,14 @@ export default function GalleryScreen({ photoUrl, name }: { photoUrl: string | n
         cubeCamera.update(renderer, scene);
         center.visible = true;
       }
+
+      for (const tile of tiles) {
+        tile.getWorldPosition(tileWorldPos);
+        const z = tileWorldPos.z;
+        const op = Math.max(0.1, Math.min(1.0, (z + RADIUS) / (RADIUS * 1.4)));
+        (tile.material as THREE.MeshBasicMaterial).opacity = op;
+      }
+
       renderer.render(scene, camera);
     };
     animate();
