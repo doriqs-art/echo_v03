@@ -4,7 +4,7 @@
 
   --font-sans: var(--font-body);
   --font-display: var(--font-syncopate);
-  --font-caption: var(--font-michroma);
+  --font-caption: var(--font-body);
 
   --color-ink: #131313;
   --color-bone: #ffffff;
