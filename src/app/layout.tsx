@@ -1,14 +1,15 @@
 import type { Metadata } from 'next';
-import { Inter, Sora, Syncopate, Michroma, Orbitron } from 'next/font/google';
+import { Montserrat_Alternates, Sora, Syncopate, Michroma, Orbitron } from 'next/font/google';
 import './globals.css';
 import SmoothScroll from '@/components/SmoothScroll';
 import Cursor from '@/components/Cursor';
 import SoundFx from '@/components/SoundFx';
 import NoiseOverlay from '@/components/NoiseOverlay';
 
-const inter = Inter({
-  variable: '--font-inter',
+const montserratAlternates = Montserrat_Alternates({
+  variable: '--font-body',
   subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
 });
 
 const sora = Sora({
@@ -47,7 +48,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${inter.variable} ${sora.variable} ${syncopate.variable} ${michroma.variable} ${orbitron.variable} antialiased`}
+      className={`${montserratAlternates.variable} ${sora.variable} ${syncopate.variable} ${michroma.variable} ${orbitron.variable} antialiased`}
     >
       <body className="bg-ink text-bone">
         <NoiseOverlay />
