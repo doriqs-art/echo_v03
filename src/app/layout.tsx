@@ -1,12 +1,12 @@
 import type { Metadata } from 'next';
-import { Montserrat_Alternates, Syncopate } from 'next/font/google';
+import { Public_Sans, Syncopate } from 'next/font/google';
 import './globals.css';
 import SmoothScroll from '@/components/SmoothScroll';
 import Cursor from '@/components/Cursor';
 import SoundFx from '@/components/SoundFx';
 import NoiseOverlay from '@/components/NoiseOverlay';
 
-const montserratAlt = Montserrat_Alternates({
+const publicSans = Public_Sans({
   variable: '--font-body',
   subsets: ['latin'],
   weight: ['400', '500', '600', '700', '800'],
@@ -30,7 +30,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${montserratAlt.variable} ${syncopate.variable} antialiased`}
+      className={`${publicSans.variable} ${syncopate.variable} antialiased`}
     >
       <body className="bg-ink text-bone">
         <NoiseOverlay />
