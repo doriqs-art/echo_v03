@@ -256,20 +256,20 @@ export default function HeroPortal() {
               if (e.key === 'Enter') submitPrompt();
             }}
             style={{
-              width: 'min(568px, 84vw)',
-              height: '54px',
-              borderRadius: '999px',
-              background: 'rgba(24, 26, 37, 0.18)',
+              width: 'min(340px, 80%)',
+              height: '44px',
+              borderRadius: '18px 18px 18px 4px',
+              background: 'transparent',
               backdropFilter: 'blur(4px)',
               WebkitBackdropFilter: 'blur(4px)',
-              border: '1px solid #ffffff',
+              border: '1px solid rgba(255,255,255,0.25)',
               color: '#ffffff',
               caretColor: '#ffffff',
               textAlign: 'left',
-              padding: '0 28px',
+              padding: '0 18px',
               fontFamily: 'var(--font-body), sans-serif',
               fontWeight: 400,
-              fontSize: 'clamp(0.9rem, 3.4vw, 23px)',
+              fontSize: 'clamp(0.8rem, 1vw, 0.95rem)',
               outline: 'none',
             }}
           />
