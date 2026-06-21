@@ -258,7 +258,7 @@ export default function HeroPortal() {
             style={{
               width: 'min(340px, 80%)',
               height: '44px',
-              borderRadius: '18px 18px 18px 4px',
+              borderRadius: '18px 18px 18px 18px',
               background: 'transparent',
               backdropFilter: 'blur(4px)',
               WebkitBackdropFilter: 'blur(4px)',
