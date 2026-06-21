@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import LogoBlur from '@/components/LogoBlur';
+import BorderGlow from '@/components/BorderGlow';
 import { MEMORIES, type MemoryEntry } from '@/lib/memories';
 
 const BG = 0x131313;
@@ -432,18 +433,27 @@ export default function MemoriesScreen({
           style={{ background: 'rgba(8,8,8,0.62)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)' }}
           onClick={() => setOpened(null)}
         >
-          <div
-            className="echo-lightbox-img relative"
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              width: 'min(92vw, 420px)',
-              borderRadius: '28px',
-              overflow: 'hidden',
-              background: 'rgba(20,20,20,0.85)',
-              border: '1px solid rgba(255,255,255,0.12)',
-              boxShadow: '0 30px 80px rgba(0,0,0,0.55)',
-            }}
+          <BorderGlow
+            backgroundColor="rgba(20,20,20,0.85)"
+            borderRadius={28}
+            glowColor="220 80 70"
+            colors={['#a78bfa', '#818cf8', '#38bdf8']}
+            glowRadius={36}
+            glowIntensity={0.9}
+            edgeSensitivity={25}
+            coneSpread={20}
+            animated
           >
+            <div
+              className="echo-lightbox-img relative"
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                width: 'min(92vw, 420px)',
+                borderRadius: '28px',
+                overflow: 'hidden',
+                boxShadow: '0 30px 80px rgba(0,0,0,0.55)',
+              }}
+            >
             <div style={{ background: '#0e0e0e', borderRadius: '28px 28px 0 0', overflow: 'hidden' }}>
               <ModelPreview memoryId={opened.id} />
             </div>
@@ -531,6 +541,7 @@ export default function MemoriesScreen({
               </button>
             </div>
           </div>
+          </BorderGlow>
         </div>
       )}
     </div>
