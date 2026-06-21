@@ -17,7 +17,7 @@ const MODEL_MAP: Record<string, string> = {
   poppy:           '/models/dog_head_simple_model.glb',
   graduation:      '/models/disco_ball.glb',
   'beach-day':     '/models/old_tv_usssr.glb',
-  'first-apartment': '/models/orange+payphone+3d+model.glb', // placeholder
+  'first-apartment': '/models/monalisa.glb',
   riverside:       '/models/disco_ball.glb',                 // placeholder
 };
 
@@ -27,7 +27,7 @@ const SCALE_MAP: Record<string, number> = {
   poppy:             1.60,
   graduation:        1.50,
   'beach-day':       1.45,
-  'first-apartment': 1.40,
+  'first-apartment': 1.35,
   riverside:         1.50,
 };
 
