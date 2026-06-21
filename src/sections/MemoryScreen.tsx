@@ -226,13 +226,13 @@ export default function MemoryScreen({
           To give the best results, Can I ask a few things?
         </p>
 
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-2">
 
           <SystemBubble>What was your dog&apos;s name?</SystemBubble>
           {answers.name ? <UserBubble>{answers.name}</UserBubble> : answerInput('name', 1)}
 
           {current >= 1 && (
-            <div style={{ alignSelf: 'flex-start', width: SYS_WIDTH, position: 'relative', marginBottom: '34px' }} className="echo-rise">
+            <div style={{ alignSelf: 'flex-start', width: SYS_WIDTH, position: 'relative', marginBottom: '22px' }} className="echo-rise">
               <div style={sysBox}>How many years did you spend together?</div>
               <div
                 style={{
