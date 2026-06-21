@@ -18,7 +18,7 @@ const MODEL_MAP: Record<string, string> = {
   graduation:      '/models/disco_ball.glb',
   'beach-day':     '/models/old_tv_usssr.glb',
   'first-apartment': '/models/monalisa.glb',
-  riverside:       '/models/disco_ball.glb',                 // placeholder
+  riverside:       '/models/pancake.glb',
 };
 
 // Per-model scale tuning so they all feel roughly the same size in the ring
@@ -28,7 +28,7 @@ const SCALE_MAP: Record<string, number> = {
   graduation:        1.50,
   'beach-day':       1.45,
   'first-apartment': 1.35,
-  riverside:         1.50,
+  riverside:         1.45,
 };
 
 // Small spinning 3D preview used inside the popup
