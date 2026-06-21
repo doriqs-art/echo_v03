@@ -197,8 +197,8 @@ export default function HeroPortal() {
           className="select-none"
           style={{
             fontFamily: 'var(--font-body), sans-serif',
-            fontSize: 'clamp(0.6rem, 1.1vw, 0.9rem)',
-            letterSpacing: '0.25em',
+            fontSize: 'clamp(0.8rem, 1.4vw, 1rem)',
+            letterSpacing: '0.05em',
             color: 'rgba(255,255,255,0.5)',
             marginBottom: '0.5em',
           }}
@@ -226,7 +226,7 @@ export default function HeroPortal() {
             cursor: 'pointer',
           }}
         >
-          Begin
+          Start
         </button>
       </div>
 
