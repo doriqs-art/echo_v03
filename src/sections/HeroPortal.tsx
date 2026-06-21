@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import * as THREE from 'three';
 import MemoryScreen from '@/sections/MemoryScreen';
 import GeneratingScreen from '@/sections/GeneratingScreen';
 import GalleryScreen from '@/sections/GalleryScreen';
@@ -13,8 +14,11 @@ type Phase = 'intro' | 'warp' | 'prompt' | 'loading' | 'memory' | 'generating' |
 type Memory = { name: string; photoUrl: string | null };
 
 const BOOST_MS = 2200;
+const BG = 0x131313;
+const SHAPE_SPEED = 1.2;
 
 export default function HeroPortal() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const [phase, setPhase] = useState<Phase>('intro');
   const [promptText, setPromptText] = useState('');
   const [memory, setMemory] = useState<Memory | null>(null);
@@ -22,6 +26,7 @@ export default function HeroPortal() {
   const warpTimeout = useRef<number | null>(null);
   const loadTimeout = useRef<number | null>(null);
   const genTimeouts = useRef<number[]>([]);
+
   useEffect(() => {
     phaseRef.current = phase;
   }, [phase]);
@@ -53,19 +58,128 @@ export default function HeroPortal() {
     setPhase('intro');
   };
 
+  // Three.js: floating shapes only, no tunnel
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(BG);
+
+    let W = window.innerWidth;
+    let H = window.innerHeight;
+    const camera = new THREE.PerspectiveCamera(70, W / H, 0.1, 200);
+    camera.position.z = 10;
+
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
+    renderer.setSize(W, H);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+    const SHAPE_COUNT = 26;
+    const SPREAD_X = 14;
+    const SPREAD_Y = 9;
+    const DEPTH_RANGE = 30;
+
+    const shapeGeos = [
+      new THREE.PlaneGeometry(1.1, 1.1),
+      new THREE.PlaneGeometry(1.7, 1.0),
+      new THREE.CircleGeometry(0.7, 32),
+    ];
+    const shapeMat = new THREE.MeshBasicMaterial({
+      color: 0xeaeaf2,
+      transparent: true,
+      opacity: 0.45,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+      side: THREE.DoubleSide,
+      toneMapped: false,
+    });
+
+    const shapes: THREE.Mesh[] = [];
+
+    const placeShape = (m: THREE.Mesh, z: number) => {
+      m.position.set(
+        (Math.random() - 0.5) * SPREAD_X * 2,
+        (Math.random() - 0.5) * SPREAD_Y * 2,
+        z
+      );
+      m.rotation.set(
+        Math.random() * Math.PI,
+        Math.random() * Math.PI,
+        Math.random() * Math.PI
+      );
+      m.userData.spin = (Math.random() - 0.5) * 0.5;
+      m.userData.drift = SHAPE_SPEED * (0.6 + Math.random() * 0.8);
+    };
+
+    for (let i = 0; i < SHAPE_COUNT; i++) {
+      const m = new THREE.Mesh(shapeGeos[i % shapeGeos.length], shapeMat);
+      m.scale.setScalar(0.55 + Math.random() * 0.9);
+      placeShape(m, camera.position.z - Math.random() * DEPTH_RANGE);
+      scene.add(m);
+      shapes.push(m);
+    }
+
+    let frame = 0;
+    let last = performance.now();
+
+    const animate = () => {
+      frame = requestAnimationFrame(animate);
+      const now = performance.now();
+      const dt = Math.min((now - last) / 1000, 0.05);
+      last = now;
+
+      const showShapes = phaseRef.current !== 'generating';
+
+      for (const m of shapes) {
+        m.visible = showShapes;
+        m.rotation.z += m.userData.spin * dt;
+        m.rotation.x += m.userData.spin * 0.5 * dt;
+        // drift toward camera (positive z)
+        m.position.z += m.userData.drift * dt;
+        // recycle when past camera
+        if (m.position.z > camera.position.z + 4) {
+          placeShape(m, camera.position.z - DEPTH_RANGE);
+        }
+      }
+
+      renderer.render(scene, camera);
+    };
+    animate();
+
+    const onResize = () => {
+      W = window.innerWidth;
+      H = window.innerHeight;
+      camera.aspect = W / H;
+      camera.updateProjectionMatrix();
+      renderer.setSize(W, H);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    };
+    window.addEventListener('resize', onResize);
+
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener('resize', onResize);
+      shapeGeos.forEach((g) => g.dispose());
+      shapeMat.dispose();
+      renderer.dispose();
+    };
+  }, []);
+
   const intro = phase === 'intro';
   const onPrompt = phase === 'prompt';
 
   return (
     <div className="relative h-screen w-full overflow-hidden" style={{ background: '#131313' }}>
+      <canvas ref={canvasRef} className="block h-full w-full absolute inset-0" />
 
-      {/* Radial vignette overlay */}
+      {/* Subtle dark gradient — lighter at center, darker at edges */}
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 z-10"
         style={{
           background:
-            'radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.55) 100%)',
+            'radial-gradient(ellipse at center, rgba(30,30,35,0.0) 0%, rgba(10,10,12,0.55) 70%, rgba(0,0,0,0.75) 100%)',
         }}
       />
 
@@ -130,36 +244,36 @@ export default function HeroPortal() {
       </div>
 
       {onPrompt && (
-      <div className="absolute inset-0 z-20 flex items-center justify-center px-6">
-        <input
-          type="text"
-          aria-label="What do you want to remember?"
-          placeholder="What do you want to remember?"
-          className="echo-prompt-input echo-prompt-rise"
-          value={promptText}
-          onChange={(e) => setPromptText(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') submitPrompt();
-          }}
-          style={{
-            width: 'min(568px, 84vw)',
-            height: '54px',
-            borderRadius: '999px',
-            background: 'rgba(24, 26, 37, 0.18)',
-            backdropFilter: 'blur(4px)',
-            WebkitBackdropFilter: 'blur(4px)',
-            border: '1px solid #ffffff',
-            color: '#ffffff',
-            caretColor: '#ffffff',
-            textAlign: 'left',
-            padding: '0 28px',
-            fontFamily: 'var(--font-body), sans-serif',
-            fontWeight: 400,
-            fontSize: 'clamp(0.9rem, 3.4vw, 23px)',
-            outline: 'none',
-          }}
-        />
-      </div>
+        <div className="absolute inset-0 z-20 flex items-center justify-center px-6">
+          <input
+            type="text"
+            aria-label="What do you want to remember?"
+            placeholder="What do you want to remember?"
+            className="echo-prompt-input echo-prompt-rise"
+            value={promptText}
+            onChange={(e) => setPromptText(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') submitPrompt();
+            }}
+            style={{
+              width: 'min(568px, 84vw)',
+              height: '54px',
+              borderRadius: '999px',
+              background: 'rgba(24, 26, 37, 0.18)',
+              backdropFilter: 'blur(4px)',
+              WebkitBackdropFilter: 'blur(4px)',
+              border: '1px solid #ffffff',
+              color: '#ffffff',
+              caretColor: '#ffffff',
+              textAlign: 'left',
+              padding: '0 28px',
+              fontFamily: 'var(--font-body), sans-serif',
+              fontWeight: 400,
+              fontSize: 'clamp(0.9rem, 3.4vw, 23px)',
+              outline: 'none',
+            }}
+          />
+        </div>
       )}
 
       {phase === 'loading' && (
@@ -194,9 +308,7 @@ export default function HeroPortal() {
       )}
 
       {phase === 'memory' && <MemoryScreen onBegin={startGenerating} />}
-
       {phase === 'generating' && <GeneratingScreen onDone={() => setPhase('gallery')} />}
-
       {phase === 'gallery' && (
         <GalleryScreen photoUrl={memory?.photoUrl ?? null} name={memory?.name} />
       )}
