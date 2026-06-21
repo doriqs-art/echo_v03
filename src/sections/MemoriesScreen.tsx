@@ -365,11 +365,12 @@ export default function MemoriesScreen({
                   marginTop: '14px',
                   fontFamily: 'var(--font-body), sans-serif',
                   fontSize: '0.85rem',
-                  lineHeight: 1.5,
-                  color: 'rgba(255,255,255,0.8)',
+                  lineHeight: 1.6,
+                  color: 'rgba(255,255,255,0.7)',
+                  fontStyle: 'italic',
                 }}
               >
-                {opened.tagline}
+                &ldquo;{opened.prompt}&rdquo;
               </p>
 
               <button
