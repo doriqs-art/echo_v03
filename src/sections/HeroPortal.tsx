@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import * as THREE from 'three';
 import MemoryScreen from '@/sections/MemoryScreen';
 import GeneratingScreen from '@/sections/GeneratingScreen';
 import GalleryScreen from '@/sections/GalleryScreen';
@@ -13,24 +12,13 @@ import * as sound from '@/lib/sound';
 type Phase = 'intro' | 'warp' | 'prompt' | 'loading' | 'memory' | 'generating' | 'gallery' | 'memories';
 type Memory = { name: string; photoUrl: string | null };
 
-const TUNNEL_WIDTH = 24;
-const TUNNEL_HEIGHT = 16;
-const SEGMENT_DEPTH = 6;
-const NUM_SEGMENTS = 14;
-const SPOKES = 40;
-const SPEED = 5;
-const BOOST_MULT = 11;
 const BOOST_MS = 2200;
-const BG = 0x131313;
 
 export default function HeroPortal() {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-
   const [phase, setPhase] = useState<Phase>('intro');
   const [promptText, setPromptText] = useState('');
   const [memory, setMemory] = useState<Memory | null>(null);
   const phaseRef = useRef<Phase>('intro');
-  const boostRef = useRef(0);
   const warpTimeout = useRef<number | null>(null);
   const loadTimeout = useRef<number | null>(null);
   const genTimeouts = useRef<number[]>([]);
@@ -40,7 +28,6 @@ export default function HeroPortal() {
 
   const begin = () => {
     if (phaseRef.current !== 'intro') return;
-    boostRef.current = performance.now();
     sound.whoosh(BOOST_MS);
     setPhase('warp');
     warpTimeout.current = window.setTimeout(() => setPhase('prompt'), BOOST_MS);
@@ -62,192 +49,17 @@ export default function HeroPortal() {
     if (loadTimeout.current) clearTimeout(loadTimeout.current);
     genTimeouts.current.forEach(clearTimeout);
     genTimeouts.current = [];
-    boostRef.current = 0;
     setPromptText('');
     setPhase('intro');
   };
 
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const rx = TUNNEL_WIDTH / 2;
-    const ry = TUNNEL_HEIGHT / 2;
-    const ring = Array.from({ length: SPOKES }, (_, i) => {
-      const a = (i / SPOKES) * Math.PI * 2;
-      return [Math.cos(a) * rx, Math.sin(a) * ry] as const;
-    });
-
-    const createSegment = (zPos: number) => {
-      const group = new THREE.Group();
-      group.position.z = zPos;
-      const d = SEGMENT_DEPTH;
-      const mat = new THREE.LineBasicMaterial({
-        color: 0xffffff,
-        transparent: true,
-        opacity: 0.28,
-      });
-      const geo = new THREE.BufferGeometry();
-      const v: number[] = [];
-      for (let i = 0; i < SPOKES; i++) {
-        const [x, y] = ring[i];
-        const [nx, ny] = ring[(i + 1) % SPOKES];
-
-        v.push(x, y, 0, x, y, -d);
-
-        v.push(x, y, 0, nx, ny, 0);
-        v.push(x, y, -d, nx, ny, -d);
-      }
-      geo.setAttribute('position', new THREE.Float32BufferAttribute(v, 3));
-      group.add(new THREE.LineSegments(geo, mat));
-      return group;
-    };
-
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(BG);
-    scene.fog = new THREE.FogExp2(BG, 0.018);
-
-    let W = window.innerWidth;
-    let H = window.innerHeight;
-    const camera = new THREE.PerspectiveCamera(70, W / H, 0.1, 1000);
-
-    camera.position.z = -SEGMENT_DEPTH * 3;
-
-    const renderer = new THREE.WebGLRenderer({
-      canvas,
-      antialias: true,
-      powerPreference: 'high-performance',
-    });
-    renderer.setSize(W, H);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-
-    const segments: THREE.Group[] = [];
-    for (let i = 0; i < NUM_SEGMENTS; i++) {
-      const s = createSegment(-i * SEGMENT_DEPTH);
-      scene.add(s);
-      segments.push(s);
-    }
-    const recycleSpan = NUM_SEGMENTS * SEGMENT_DEPTH;
-
-    const SHAPE_COUNT = 26;
-    const shapeGeos = [
-      new THREE.PlaneGeometry(1.1, 1.1),
-      new THREE.PlaneGeometry(1.7, 1.0),
-      new THREE.CircleGeometry(0.7, 32),
-    ];
-    const shapeMat = new THREE.MeshBasicMaterial({
-      color: 0xeaeaf2,
-      transparent: true,
-      opacity: 0.5,
-      blending: THREE.AdditiveBlending,
-      depthWrite: false,
-      side: THREE.DoubleSide,
-      toneMapped: false,
-    });
-    const shapes: THREE.Mesh[] = [];
-    const placeShape = (m: THREE.Mesh, z: number) => {
-      const a = Math.random() * Math.PI * 2;
-      const f = 0.55 + Math.random() * 0.4;
-      m.position.set(Math.cos(a) * rx * f, Math.sin(a) * ry * f, z);
-      m.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
-      m.userData.spin = (Math.random() - 0.5) * 0.6;
-
-      m.userData.drift = SPEED * (0.7 + Math.random() * 1.0);
-    };
-    for (let i = 0; i < SHAPE_COUNT; i++) {
-      const m = new THREE.Mesh(shapeGeos[i % shapeGeos.length], shapeMat);
-      m.scale.setScalar(0.55 + Math.random() * 0.9);
-      placeShape(m, -Math.random() * recycleSpan);
-      scene.add(m);
-      shapes.push(m);
-    }
-
-    let frame = 0;
-    let last = performance.now();
-
-    const animate = () => {
-      frame = requestAnimationFrame(animate);
-      const now = performance.now();
-      const dt = Math.min((now - last) / 1000, 0.05);
-      last = now;
-
-      let speed = SPEED;
-      if (boostRef.current) {
-        const t = (now - boostRef.current) / BOOST_MS;
-        if (t >= 1) boostRef.current = 0;
-        else speed = SPEED * (1 + (BOOST_MULT - 1) * Math.sin(Math.PI * t));
-      }
-      camera.position.z -= speed * dt;
-
-      const cz = camera.position.z;
-      for (const s of segments) {
-        if (s.position.z > cz + SEGMENT_DEPTH) {
-          let min = Infinity;
-          for (const x of segments) min = Math.min(min, x.position.z);
-          s.position.z = min - SEGMENT_DEPTH;
-        }
-      }
-
-      const showShapes = phaseRef.current !== 'generating';
-
-      for (const m of shapes) {
-        m.visible = showShapes;
-        m.rotation.z += m.userData.spin * dt;
-        m.rotation.x += m.userData.spin * 0.5 * dt;
-
-        m.position.z += m.userData.drift * (speed / SPEED) * dt;
-        if (m.position.z > cz + SEGMENT_DEPTH) placeShape(m, cz - recycleSpan);
-      }
-
-      renderer.render(scene, camera);
-    };
-    animate();
-
-    const onResize = () => {
-      W = window.innerWidth;
-      H = window.innerHeight;
-      camera.aspect = W / H;
-      camera.updateProjectionMatrix();
-      renderer.setSize(W, H);
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    };
-    window.addEventListener('resize', onResize);
-
-    return () => {
-      cancelAnimationFrame(frame);
-      if (warpTimeout.current) clearTimeout(warpTimeout.current);
-      if (loadTimeout.current) clearTimeout(loadTimeout.current);
-      genTimeouts.current.forEach(clearTimeout);
-      window.removeEventListener('resize', onResize);
-      for (const s of segments) {
-        s.traverse((o) => {
-          if (o instanceof THREE.LineSegments) {
-            o.geometry.dispose();
-            (o.material as THREE.Material).dispose();
-          }
-        });
-      }
-      shapeGeos.forEach((g) => g.dispose());
-      shapeMat.dispose();
-      renderer.dispose();
-    };
-  }, []);
-
   const intro = phase === 'intro';
   const onPrompt = phase === 'prompt';
 
-  const echoFont = {
-    fontFamily: 'var(--font-syncopate), sans-serif',
-    fontWeight: 700,
-    lineHeight: 1,
-    letterSpacing: '-0.02em',
-    color: '#ffffff',
-  } as const;
-
   return (
-    <div className="relative h-screen w-full overflow-hidden bg-ink">
-      <canvas ref={canvasRef} className="block h-full w-full" />
+    <div className="relative h-screen w-full overflow-hidden" style={{ background: '#131313' }}>
 
+      {/* Radial vignette overlay */}
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 z-10"
@@ -257,6 +69,7 @@ export default function HeroPortal() {
         }}
       />
 
+      {/* Intro: logo + Begin button */}
       <div
         className="absolute inset-0 z-20 flex flex-col items-center justify-center text-center"
         style={{
@@ -303,6 +116,7 @@ export default function HeroPortal() {
         </button>
       </div>
 
+      {/* Prompt phase: top logo */}
       <div
         aria-hidden={!onPrompt}
         className="absolute left-1/2 top-[6%] z-20"
@@ -467,6 +281,7 @@ export default function HeroPortal() {
         <SoundToggle />
       </div>
 
+      {/* Noise overlay */}
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 z-40"
