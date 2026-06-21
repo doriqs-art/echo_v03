@@ -85,7 +85,9 @@ export default function HeroPortal() {
       new THREE.PlaneGeometry(1.7, 1.0),
       new THREE.CircleGeometry(0.7, 32),
     ];
-    const shapeMat = new THREE.MeshBasicMaterial({
+
+    // Each shape gets its own material so opacity can vary with depth
+    const makeMat = () => new THREE.MeshBasicMaterial({
       color: 0xeaeaf2,
       transparent: true,
       opacity: 0.45,
@@ -96,6 +98,18 @@ export default function HeroPortal() {
     });
 
     const shapes: THREE.Mesh[] = [];
+
+    // Depth factor 0 (far) → 1 (near camera)
+    const depthFactor = (z: number) => Math.max(0, Math.min(1, (z - (camera.position.z - DEPTH_RANGE)) / DEPTH_RANGE));
+
+    const applyDepth = (m: THREE.Mesh) => {
+      const d = depthFactor(m.position.z);
+      // Opacity: 0.05 far → 0.55 near
+      (m.material as THREE.MeshBasicMaterial).opacity = 0.05 + d * 0.50;
+      // Scale: shrink when far, grow when near (on top of base scale)
+      const base = m.userData.baseScale as number;
+      m.scale.setScalar(base * (0.35 + d * 0.65));
+    };
 
     const placeShape = (m: THREE.Mesh, z: number) => {
       m.position.set(
@@ -110,11 +124,14 @@ export default function HeroPortal() {
       );
       m.userData.spin = (Math.random() - 0.5) * 0.5;
       m.userData.drift = SHAPE_SPEED * (0.6 + Math.random() * 0.8);
+      applyDepth(m);
     };
 
     for (let i = 0; i < SHAPE_COUNT; i++) {
-      const m = new THREE.Mesh(shapeGeos[i % shapeGeos.length], shapeMat);
-      m.scale.setScalar(0.55 + Math.random() * 0.9);
+      const m = new THREE.Mesh(shapeGeos[i % shapeGeos.length], makeMat());
+      const baseScale = 0.55 + Math.random() * 0.9;
+      m.userData.baseScale = baseScale;
+      m.scale.setScalar(baseScale);
       placeShape(m, camera.position.z - Math.random() * DEPTH_RANGE);
       scene.add(m);
       shapes.push(m);
@@ -141,6 +158,7 @@ export default function HeroPortal() {
         if (m.position.z > camera.position.z + 4) {
           placeShape(m, camera.position.z - DEPTH_RANGE);
         }
+        applyDepth(m);
       }
 
       renderer.render(scene, camera);
@@ -161,7 +179,7 @@ export default function HeroPortal() {
       cancelAnimationFrame(frame);
       window.removeEventListener('resize', onResize);
       shapeGeos.forEach((g) => g.dispose());
-      shapeMat.dispose();
+      shapes.forEach((m) => (m.material as THREE.MeshBasicMaterial).dispose());
       renderer.dispose();
     };
   }, []);
@@ -258,7 +276,7 @@ export default function HeroPortal() {
             style={{
               width: 'min(340px, 80%)',
               height: '44px',
-              borderRadius: '18px 18px 18px 18px',
+              borderRadius: '18px 18px 18px 4px',
               background: 'transparent',
               backdropFilter: 'blur(4px)',
               WebkitBackdropFilter: 'blur(4px)',
