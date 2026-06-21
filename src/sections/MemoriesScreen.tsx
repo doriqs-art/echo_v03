@@ -23,12 +23,12 @@ const MODEL_MAP: Record<string, string> = {
 
 // Per-model scale tuning so they all feel roughly the same size in the ring
 const SCALE_MAP: Record<string, number> = {
-  tokyo:             0.55,
-  poppy:             0.72,
-  graduation:        0.62,
-  'beach-day':       0.60,
-  'first-apartment': 0.55,
-  riverside:         0.62,
+  tokyo:             1.40,
+  poppy:             1.60,
+  graduation:        1.50,
+  'beach-day':       1.45,
+  'first-apartment': 1.40,
+  riverside:         1.50,
 };
 
 export default function MemoriesScreen({
@@ -144,12 +144,8 @@ export default function MemoriesScreen({
         const center = box.getCenter(new THREE.Vector3());
         obj.position.sub(center.multiplyScalar(targetScale / maxDim));
 
-        // Give initial random rotation
-        obj.rotation.set(
-          baseAngle * 0.7 + i,
-          baseAngle * 0.4 + i * 1.3,
-          i * 0.6
-        );
+        // Start facing the camera (no initial tilt)
+        obj.rotation.set(0, 0, 0);
 
         root.add(obj);
       });
