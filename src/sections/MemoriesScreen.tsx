@@ -160,8 +160,10 @@ export default function MemoriesScreen({
     };
 
     const models: ModelData[] = [];
-    // All root groups for raycasting (traverse children)
-    const roots: THREE.Group[] = [];
+    // Invisible sphere hitboxes — cheap to raycast against
+    const hitboxes: THREE.Mesh[] = [];
+    const hitboxGeo = new THREE.SphereGeometry(0.8, 8, 8);
+    const hitboxMat = new THREE.MeshBasicMaterial({ visible: false });
 
     const items = MEMORIES.slice(0, 6);
     const n = items.length;
@@ -179,7 +181,11 @@ export default function MemoriesScreen({
         baseZ
       );
       scene.add(root);
-      roots.push(root);
+
+      // Invisible hitbox sphere — raycasting only, no geometry traversal
+      const hitbox = new THREE.Mesh(hitboxGeo, hitboxMat);
+      root.add(hitbox);
+      hitboxes.push(hitbox);
 
       const data: ModelData = {
         memory: m,
@@ -194,8 +200,8 @@ export default function MemoriesScreen({
       };
       models.push(data);
 
-      // Store memory on root for raycaster lookup
-      root.userData.modelData = data;
+      // Store memory on hitbox for raycaster lookup
+      hitbox.userData.modelData = data;
 
       // Load GLB
       const modelPath = MODEL_MAP[m.id] ?? '/models/dog_head_simple_model.glb';
@@ -239,16 +245,13 @@ export default function MemoriesScreen({
 
       ringRot += RING_SPEED * dt;
 
-      // Raycast against all descendants of each root
+      // Raycast against cheap invisible spheres — not the full GLB geometry
       hoveredData = null;
       if (!openRef.current) {
         raycaster.setFromCamera(pointer, camera);
-        const hits = raycaster.intersectObjects(roots, true);
+        const hits = raycaster.intersectObjects(hitboxes, false);
         if (hits.length) {
-          // Walk up to find our root
-          let obj: THREE.Object3D | null = hits[0].object;
-          while (obj && !obj.userData.modelData) obj = obj.parent;
-          if (obj?.userData.modelData) hoveredData = obj.userData.modelData as ModelData;
+          hoveredData = hits[0].object.userData.modelData as ModelData;
         }
       }
 
@@ -261,8 +264,8 @@ export default function MemoriesScreen({
         d.root.position.y = Math.sin(a) * RING_RY + Math.sin(t * d.bobSpeed + d.bobPhase) * d.bobAmp;
         d.root.position.z = d.baseZ + d.hoverEase * 0.6;
 
-        // Spin the inner GLB child (index 0), not the root
-        const inner = d.root.children[0];
+        // Spin the GLB (children[1] — children[0] is the hitbox)
+        const inner = d.root.children[1];
         if (inner) {
           const spinScale = 1 - d.hoverEase * 0.85;
           inner.rotation.x += d.spin.x * dt * spinScale;
@@ -315,13 +318,9 @@ export default function MemoriesScreen({
       pointer.x = (e.clientX / window.innerWidth) * 2 - 1;
       pointer.y = -(e.clientY / window.innerHeight) * 2 + 1;
       raycaster.setFromCamera(pointer, camera);
-      const hits = raycaster.intersectObjects(roots, true);
+      const hits = raycaster.intersectObjects(hitboxes, false);
       if (hits.length) {
-        let obj: THREE.Object3D | null = hits[0].object;
-        while (obj && !obj.userData.modelData) obj = obj.parent;
-        if (obj?.userData.modelData) {
-          setOpened((obj.userData.modelData as ModelData).memory);
-        }
+        setOpened((hits[0].object.userData.modelData as ModelData).memory);
       }
     };
     window.addEventListener('pointermove', onPointerMove);
