@@ -9,9 +9,9 @@ import LogoBlur from '@/components/LogoBlur';
 const BODY_FONT = 'var(--font-body), sans-serif';
 
 const BEATS: Array<{ title: string; sub: string }> = [
-  { title: 'Creating your echo…', sub: 'THIS WILL TAKE A MINUTE. COME BACK LATER' },
-  { title: 'Gathering your memories…', sub: 'THIS WILL TAKE A MINUTE. COME BACK LATER' },
-  { title: 'Your echo is complete', sub: 'YOUR MEMORY IS READY' },
+  { title: 'Creating your memory…', sub: 'THIS WILL TAKE A MINUTE. COME BACK LATER' },
+  { title: 'Gathering your echoes…', sub: 'THIS WILL TAKE A MINUTE. COME BACK LATER' },
+  { title: 'Your memory is complete', sub: 'YOUR ECHOES ARE READY' },
 ];
 const beatFor = (p: number) => (p < 0.4 ? 0 : p < 0.8 ? 1 : 2);
 
