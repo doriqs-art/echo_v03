@@ -807,7 +807,7 @@ export default function GalleryScreen({ photoUrl, name }: { photoUrl: string | n
           color: '#ffffff',
         }}
       >
-        {name ? `${name}'s echo` : 'Your echo'}
+        {name ? `${name}'s Memory` : 'Your Memory'}
       </p>
 
       <button
@@ -820,7 +820,7 @@ export default function GalleryScreen({ photoUrl, name }: { photoUrl: string | n
             setFiltered(true);
           }
         }}
-        aria-label={filtered ? 'Show all memories' : 'Show preserved artifacts'}
+        aria-label={filtered ? 'Show all memories' : 'Show preserved echoes'}
         className="echo-cta"
         style={{
           position: 'absolute',
@@ -845,7 +845,7 @@ export default function GalleryScreen({ photoUrl, name }: { photoUrl: string | n
           opacity: preserved.length > 0 || filtered ? 1 : 0.55,
         }}
       >
-        {filtered ? 'Show all' : preserved.length > 0 ? `Artifacts · ${preserved.length}` : 'Artifacts'}
+        {filtered ? 'Show all' : preserved.length > 0 ? `Echoes · ${preserved.length}` : 'Echoes'}
       </button>
 
       <div
@@ -869,7 +869,7 @@ export default function GalleryScreen({ photoUrl, name }: { photoUrl: string | n
           willChange: 'transform, opacity',
         }}
       >
-        {name ? `${name}'s echo` : 'This memory'}
+        {name ? `${name}'s Memory` : 'This memory'}
       </div>
 
       {opened !== null && (
@@ -1126,7 +1126,7 @@ export default function GalleryScreen({ photoUrl, name }: { photoUrl: string | n
                     cursor: 'pointer',
                   }}
                 >
-                  {isPreserved ? `Saved to ${name ? `${name}'s` : 'your'} echo ✓` : `Save to ${name ? `${name}'s` : 'your'} echo`}
+                  {isPreserved ? `Saved to ${name ? `${name}'s` : 'your'} memory ✓` : `Save to ${name ? `${name}'s` : 'your'} memory`}
                 </button>
               );
             })()}
