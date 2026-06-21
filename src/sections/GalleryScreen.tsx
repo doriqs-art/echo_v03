@@ -5,6 +5,7 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import LogoBlur from '@/components/LogoBlur';
+import BorderGlow from '@/components/BorderGlow';
 import * as sound from '@/lib/sound';
 
 const PHOTOS = [
@@ -886,13 +887,22 @@ export default function GalleryScreen({ photoUrl, name }: { photoUrl: string | n
           aria-label={`${name ? `${name}'s` : 'Your'} ${opened.kind}`}
           onClick={() => setOpened(null)}
         >
+          <BorderGlow
+            backgroundColor="#171717"
+            borderRadius={32}
+            glowColor="220 80 70"
+            colors={['#a78bfa', '#818cf8', '#38bdf8']}
+            glowRadius={40}
+            glowIntensity={0.9}
+            edgeSensitivity={25}
+            coneSpread={20}
+            animated
+          >
           <div
             className="echo-lightbox-img relative flex flex-col items-center"
             onClick={(e) => e.stopPropagation()}
             style={{
               width: opened.kind === 'video' ? 'min(94vw, 760px)' : 'min(88vw, 440px)',
-              background: '#171717',
-              border: '1px solid rgba(255,255,255,0.12)',
               borderRadius: '32px',
               padding: '30px 28px 26px',
               boxShadow: '0 40px 110px rgba(0,0,0,0.6)',
@@ -1154,6 +1164,7 @@ export default function GalleryScreen({ photoUrl, name }: { photoUrl: string | n
               ✕
             </button>
           </div>
+          </BorderGlow>
         </div>
       )}
     </div>
