@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import LogoBlur from '@/components/LogoBlur';
 import { MEMORIES, type MemoryEntry } from '@/lib/memories';
 
@@ -9,7 +10,26 @@ const BG = 0x131313;
 const RING_RX = 3.9;
 const RING_RY = 2.05;
 const RING_SPEED = 0.08;
-const CUBE = 0.78;
+
+// Model path for each memory id — drop GLB files in public/models/
+const MODEL_MAP: Record<string, string> = {
+  tokyo:           '/models/orange+payphone+3d+model.glb',
+  poppy:           '/models/dog_head_simple_model.glb',
+  graduation:      '/models/disco_ball.glb',
+  'beach-day':     '/models/old_tv_usssr.glb',
+  'first-apartment': '/models/orange+payphone+3d+model.glb', // placeholder
+  riverside:       '/models/disco_ball.glb',                 // placeholder
+};
+
+// Per-model scale tuning so they all feel roughly the same size in the ring
+const SCALE_MAP: Record<string, number> = {
+  tokyo:             0.55,
+  poppy:             0.72,
+  graduation:        0.62,
+  'beach-day':       0.60,
+  'first-apartment': 0.55,
+  riverside:         0.62,
+};
 
 export default function MemoriesScreen({
   onBack,
@@ -45,22 +65,19 @@ export default function MemoriesScreen({
     renderer.setSize(W, H);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-    const disposables: Array<{ dispose: () => void }> = [];
-
-    scene.add(new THREE.AmbientLight(0xffffff, 0.6));
-    const key = new THREE.DirectionalLight(0xffffff, 1.15);
+    // Lighting — warm key, cool fill, ambient
+    scene.add(new THREE.AmbientLight(0xffffff, 0.7));
+    const key = new THREE.DirectionalLight(0xffffff, 1.4);
     key.position.set(3, 5, 4);
     scene.add(key);
-    const fill = new THREE.DirectionalLight(0xbfd0ff, 0.35);
+    const fill = new THREE.DirectionalLight(0xbfd0ff, 0.45);
     fill.position.set(-4, -2, 2);
     scene.add(fill);
+    const rim = new THREE.DirectionalLight(0xffeedd, 0.3);
+    rim.position.set(0, -3, -4);
+    scene.add(rim);
 
-    const cubeGeo = new THREE.BoxGeometry(CUBE, CUBE, CUBE);
-    const baseMat = new THREE.MeshStandardMaterial({ color: 0xf3f3f5, metalness: 0.12, roughness: 0.62 });
-    const hoverMat = new THREE.MeshStandardMaterial({ color: 0x18181a, metalness: 0.2, roughness: 0.5 });
-    disposables.push(cubeGeo, baseMat, hoverMat);
-
-    type CubeData = {
+    type ModelData = {
       memory: MemoryEntry;
       baseAngle: number;
       baseZ: number;
@@ -69,21 +86,33 @@ export default function MemoriesScreen({
       bobPhase: number;
       spin: THREE.Vector3;
       hoverEase: number;
+      // root group that moves/scales; inner group is the loaded GLB
+      root: THREE.Group;
     };
 
-    const cubes: THREE.Mesh[] = [];
+    const models: ModelData[] = [];
+    // All root groups for raycasting (traverse children)
+    const roots: THREE.Group[] = [];
+
     const items = MEMORIES.slice(0, 6);
     const n = items.length;
+    const loader = new GLTFLoader();
+
     items.forEach((m, i) => {
       const baseAngle = (i / n) * Math.PI * 2 - Math.PI / 2;
-      const cube = new THREE.Mesh(cubeGeo, baseMat);
-      const scl = 0.82 + (i % 3) * 0.12;
-      cube.scale.setScalar(scl);
       const baseZ = ((i * 37) % 10) / 10 - 0.5;
-      cube.position.set(Math.cos(baseAngle) * RING_RX, Math.sin(baseAngle) * RING_RY, baseZ);
 
-      cube.rotation.set(baseAngle * 0.7 + i, baseAngle * 0.4 + i * 1.3, i * 0.6);
-      cube.userData = {
+      // Root group — this is what we move each frame
+      const root = new THREE.Group();
+      root.position.set(
+        Math.cos(baseAngle) * RING_RX,
+        Math.sin(baseAngle) * RING_RY,
+        baseZ
+      );
+      scene.add(root);
+      roots.push(root);
+
+      const data: ModelData = {
         memory: m,
         baseAngle,
         baseZ,
@@ -92,14 +121,43 @@ export default function MemoriesScreen({
         bobPhase: (i * 1.7) % (Math.PI * 2),
         spin: new THREE.Vector3(0.06 + (i % 3) * 0.02, 0.09 + (i % 4) * 0.015, 0.04),
         hoverEase: 0,
-      } satisfies CubeData;
-      scene.add(cube);
-      cubes.push(cube);
+        root,
+      };
+      models.push(data);
+
+      // Store memory on root for raycaster lookup
+      root.userData.modelData = data;
+
+      // Load GLB
+      const modelPath = MODEL_MAP[m.id] ?? '/models/dog_head_simple_model.glb';
+      loader.load(modelPath, (gltf) => {
+        const obj = gltf.scene;
+
+        // Auto-center and scale to unit size
+        const box = new THREE.Box3().setFromObject(obj);
+        const size = box.getSize(new THREE.Vector3());
+        const maxDim = Math.max(size.x, size.y, size.z);
+        const targetScale = SCALE_MAP[m.id] ?? 0.65;
+        obj.scale.setScalar(targetScale / maxDim);
+
+        // Center pivot
+        const center = box.getCenter(new THREE.Vector3());
+        obj.position.sub(center.multiplyScalar(targetScale / maxDim));
+
+        // Give initial random rotation
+        obj.rotation.set(
+          baseAngle * 0.7 + i,
+          baseAngle * 0.4 + i * 1.3,
+          i * 0.6
+        );
+
+        root.add(obj);
+      });
     });
 
     const raycaster = new THREE.Raycaster();
     const pointer = new THREE.Vector2(-2, -2);
-    let hovered: THREE.Mesh | null = null;
+    let hoveredData: ModelData | null = null;
     const tmp = new THREE.Vector3();
 
     let frame = 0;
@@ -116,47 +174,58 @@ export default function MemoriesScreen({
 
       ringRot += RING_SPEED * dt;
 
-      hovered = null;
+      // Raycast against all descendants of each root
+      hoveredData = null;
       if (!openRef.current) {
         raycaster.setFromCamera(pointer, camera);
-        const hits = raycaster.intersectObjects(cubes, false);
-        if (hits.length) hovered = hits[0].object as THREE.Mesh;
+        const hits = raycaster.intersectObjects(roots, true);
+        if (hits.length) {
+          // Walk up to find our root
+          let obj: THREE.Object3D | null = hits[0].object;
+          while (obj && !obj.userData.modelData) obj = obj.parent;
+          if (obj?.userData.modelData) hoveredData = obj.userData.modelData as ModelData;
+        }
       }
 
-      for (const cube of cubes) {
-        const d = cube.userData as CubeData;
-        const isHover = cube === hovered;
+      for (const d of models) {
+        const isHover = d === hoveredData;
         d.hoverEase += ((isHover ? 1 : 0) - d.hoverEase) * Math.min(1, dt * 8);
 
         const a = d.baseAngle + ringRot;
-        cube.position.x = Math.cos(a) * RING_RX;
-        cube.position.y = Math.sin(a) * RING_RY + Math.sin(t * d.bobSpeed + d.bobPhase) * d.bobAmp;
-        cube.position.z = d.baseZ + d.hoverEase * 0.6;
-        const spinScale = 1 - d.hoverEase * 0.85;
-        cube.rotation.x += d.spin.x * dt * spinScale;
-        cube.rotation.y += d.spin.y * dt * spinScale;
-        cube.rotation.z += d.spin.z * dt * spinScale;
-        const baseScl = 0.82 + (cubes.indexOf(cube) % 3) * 0.12;
-        cube.scale.setScalar(baseScl * (1 + d.hoverEase * 0.14));
-        cube.material = isHover || d.hoverEase > 0.5 ? hoverMat : baseMat;
+        d.root.position.x = Math.cos(a) * RING_RX;
+        d.root.position.y = Math.sin(a) * RING_RY + Math.sin(t * d.bobSpeed + d.bobPhase) * d.bobAmp;
+        d.root.position.z = d.baseZ + d.hoverEase * 0.6;
+
+        // Spin the inner GLB child (index 0), not the root
+        const inner = d.root.children[0];
+        if (inner) {
+          const spinScale = 1 - d.hoverEase * 0.85;
+          inner.rotation.x += d.spin.x * dt * spinScale;
+          inner.rotation.y += d.spin.y * dt * spinScale;
+          inner.rotation.z += d.spin.z * dt * spinScale;
+        }
+
+        // Scale root on hover
+        const baseScl = 1 + d.hoverEase * 0.14;
+        d.root.scale.setScalar(baseScl);
       }
 
+      // Hover label
       const lbl = labelRef.current;
       if (lbl) {
-        if (hovered) {
-          const d = hovered.userData as CubeData;
-          hovered.getWorldPosition(tmp).project(camera);
+        if (hoveredData) {
+          hoveredData.root.getWorldPosition(tmp).project(camera);
           const sx = (tmp.x * 0.5 + 0.5) * W;
           const sy = (-tmp.y * 0.5 + 0.5) * H;
-          lbl.textContent = d.memory.name;
-          lbl.style.opacity = d.hoverEase.toFixed(3);
+          lbl.textContent = hoveredData.memory.name;
+          lbl.style.opacity = hoveredData.hoverEase.toFixed(3);
           lbl.style.transform = `translate(${sx}px, ${sy + 64}px) translate(-50%, 0)`;
         } else {
           lbl.style.opacity = '0';
         }
       }
 
-      const wantCursor = hovered && !openRef.current ? 'pointer' : 'default';
+      const wantCursor = hoveredData && !openRef.current ? 'pointer' : 'default';
       if (canvas.style.cursor !== wantCursor) canvas.style.cursor = wantCursor;
 
       renderer.render(scene, camera);
@@ -165,16 +234,13 @@ export default function MemoriesScreen({
 
     let downX = 0;
     let downY = 0;
-    let moved = 0;
     const onPointerMove = (e: PointerEvent) => {
       pointer.x = (e.clientX / window.innerWidth) * 2 - 1;
       pointer.y = -(e.clientY / window.innerHeight) * 2 + 1;
-      if (downX || downY) moved += Math.hypot(e.clientX - downX, e.clientY - downY);
     };
     const onPointerDown = (e: PointerEvent) => {
       downX = e.clientX;
       downY = e.clientY;
-      moved = 0;
     };
     const onPointerUp = (e: PointerEvent) => {
       const isTap = Math.hypot(e.clientX - downX, e.clientY - downY) < 6;
@@ -184,8 +250,14 @@ export default function MemoriesScreen({
       pointer.x = (e.clientX / window.innerWidth) * 2 - 1;
       pointer.y = -(e.clientY / window.innerHeight) * 2 + 1;
       raycaster.setFromCamera(pointer, camera);
-      const hits = raycaster.intersectObjects(cubes, false);
-      if (hits.length) setOpened((hits[0].object.userData as CubeData).memory);
+      const hits = raycaster.intersectObjects(roots, true);
+      if (hits.length) {
+        let obj: THREE.Object3D | null = hits[0].object;
+        while (obj && !obj.userData.modelData) obj = obj.parent;
+        if (obj?.userData.modelData) {
+          setOpened((obj.userData.modelData as ModelData).memory);
+        }
+      }
     };
     window.addEventListener('pointermove', onPointerMove);
     canvas.addEventListener('pointerdown', onPointerDown);
@@ -213,7 +285,6 @@ export default function MemoriesScreen({
       window.removeEventListener('pointerup', onPointerUp);
       window.removeEventListener('keydown', onKey);
       window.removeEventListener('resize', onResize);
-      for (const d of disposables) d.dispose();
       renderer.dispose();
     };
   }, []);
@@ -309,7 +380,6 @@ export default function MemoriesScreen({
               boxShadow: '0 30px 80px rgba(0,0,0,0.55)',
             }}
           >
-
             <img
               src={opened.cover}
               alt={opened.name}
