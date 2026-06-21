@@ -31,6 +31,75 @@ const SCALE_MAP: Record<string, number> = {
   riverside:         1.50,
 };
 
+// Small spinning 3D preview used inside the popup
+function ModelPreview({ memoryId }: { memoryId: string }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const W = canvas.clientWidth  || 420;
+    const H = canvas.clientHeight || 300;
+
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    renderer.setSize(W, H);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setClearColor(0x000000, 0);
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(45, W / H, 0.1, 100);
+    camera.position.set(0, 0, 3.5);
+    camera.lookAt(0, 0, 0);
+
+    scene.add(new THREE.AmbientLight(0xffffff, 0.8));
+    const key = new THREE.DirectionalLight(0xffffff, 1.4);
+    key.position.set(3, 5, 4);
+    scene.add(key);
+    const fill = new THREE.DirectionalLight(0xbfd0ff, 0.45);
+    fill.position.set(-4, -2, 2);
+    scene.add(fill);
+
+    let pivot = new THREE.Group();
+    scene.add(pivot);
+
+    const loader = new GLTFLoader();
+    const modelPath = MODEL_MAP[memoryId] ?? '/models/dog_head_simple_model.glb';
+    loader.load(modelPath, (gltf) => {
+      const obj = gltf.scene;
+      const box = new THREE.Box3().setFromObject(obj);
+      const size = box.getSize(new THREE.Vector3());
+      const maxDim = Math.max(size.x, size.y, size.z) || 1;
+      const targetScale = 1.6;
+      obj.scale.setScalar(targetScale / maxDim);
+      const center = box.getCenter(new THREE.Vector3());
+      obj.position.sub(center.multiplyScalar(targetScale / maxDim));
+      pivot.add(obj);
+    });
+
+    let frame = 0;
+    const animate = () => {
+      frame = requestAnimationFrame(animate);
+      pivot.rotation.y += 0.012;
+      pivot.rotation.x = Math.sin(Date.now() / 3000) * 0.18;
+      renderer.render(scene, camera);
+    };
+    animate();
+
+    return () => {
+      cancelAnimationFrame(frame);
+      renderer.dispose();
+    };
+  }, [memoryId]);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      style={{ display: 'block', width: '100%', height: '260px' }}
+    />
+  );
+}
+
 export default function MemoriesScreen({
   onBack,
   onOpen,
@@ -376,11 +445,9 @@ export default function MemoriesScreen({
               boxShadow: '0 30px 80px rgba(0,0,0,0.55)',
             }}
           >
-            <img
-              src={opened.cover}
-              alt={opened.name}
-              style={{ display: 'block', width: '100%', height: '300px', objectFit: 'cover' }}
-            />
+            <div style={{ background: '#0e0e0e', borderRadius: '28px 28px 0 0', overflow: 'hidden' }}>
+              <ModelPreview memoryId={opened.id} />
+            </div>
             <button
               type="button"
               onClick={() => setOpened(null)}
