@@ -6,12 +6,13 @@ import MemoryScreen from '@/sections/MemoryScreen';
 import GeneratingScreen from '@/sections/GeneratingScreen';
 import GalleryScreen from '@/sections/GalleryScreen';
 import MemoriesScreen from '@/sections/MemoriesScreen';
+import MemoriesRing from '@/components/MemoriesRing';
 import LogoBlur from '@/components/LogoBlur';
 import SoundToggle from '@/components/SoundToggle';
 import * as sound from '@/lib/sound';
 
 type Phase = 'intro' | 'warp' | 'prompt' | 'loading' | 'memory' | 'generating' | 'gallery' | 'memories';
-type Memory = { name: string; photoUrl: string | null };
+type Memory = { name: string; photoUrl: string | null; id?: string };
 
 const BOOST_MS = 2200;
 const BG = 0x131313;
@@ -23,6 +24,7 @@ export default function HeroPortal() {
   const [promptText, setPromptText] = useState('');
   const [memory, setMemory] = useState<Memory | null>(null);
   const phaseRef = useRef<Phase>('intro');
+  const warpRef = useRef(false);
   const warpTimeout = useRef<number | null>(null);
   const loadTimeout = useRef<number | null>(null);
   const genTimeouts = useRef<number[]>([]);
@@ -34,8 +36,12 @@ export default function HeroPortal() {
   const begin = () => {
     if (phaseRef.current !== 'intro') return;
     sound.whoosh(BOOST_MS);
+    warpRef.current = true;
     setPhase('warp');
-    warpTimeout.current = window.setTimeout(() => setPhase('prompt'), BOOST_MS);
+    warpTimeout.current = window.setTimeout(() => {
+      warpRef.current = false;
+      setPhase('prompt');
+    }, BOOST_MS);
   };
 
   const submitPrompt = () => {
@@ -139,6 +145,7 @@ export default function HeroPortal() {
 
     let frame = 0;
     let last = performance.now();
+    let currentSpeed = SHAPE_SPEED;
 
     const animate = () => {
       frame = requestAnimationFrame(animate);
@@ -146,14 +153,18 @@ export default function HeroPortal() {
       const dt = Math.min((now - last) / 1000, 0.05);
       last = now;
 
+      // Smoothly ramp speed up during warp, back down after
+      const targetSpeed = warpRef.current ? SHAPE_SPEED * 8 : SHAPE_SPEED;
+      currentSpeed += (targetSpeed - currentSpeed) * Math.min(1, dt * 3);
+
       const showShapes = phaseRef.current !== 'generating';
 
       for (const m of shapes) {
         m.visible = showShapes;
         m.rotation.z += m.userData.spin * dt;
         m.rotation.x += m.userData.spin * 0.5 * dt;
-        // drift toward camera (positive z)
-        m.position.z += m.userData.drift * dt;
+        // drift toward camera (positive z) — use currentSpeed multiplier
+        m.position.z += m.userData.drift * (currentSpeed / SHAPE_SPEED) * dt;
         // recycle when past camera
         if (m.position.z > camera.position.z + 4) {
           placeShape(m, camera.position.z - DEPTH_RANGE);
@@ -261,8 +272,20 @@ export default function HeroPortal() {
         <LogoBlur text="ECHO" fontMin={28.8} fontVw={0.045} fontMax={57.6} blur={6} circleSize={0.7} />
       </div>
 
+      {/* Prompt phase: interactive 3D models orbiting around the prompt */}
       {onPrompt && (
-        <div className="absolute inset-0 z-20 flex items-center justify-center px-6">
+        <div className="absolute inset-0 z-15">
+          <MemoriesRing
+            onOpen={(m) => {
+              setMemory({ id: m.id, name: m.name, photoUrl: null });
+              setPhase('gallery');
+            }}
+          />
+        </div>
+      )}
+
+      {onPrompt && (
+        <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center px-6">
           <input
             type="text"
             aria-label="What do you want to remember?"
@@ -281,6 +304,7 @@ export default function HeroPortal() {
               backdropFilter: 'blur(4px)',
               WebkitBackdropFilter: 'blur(4px)',
               border: '1px solid rgba(255,255,255,0.25)',
+              pointerEvents: 'auto',
               color: '#ffffff',
               caretColor: '#ffffff',
               textAlign: 'left',
@@ -328,7 +352,7 @@ export default function HeroPortal() {
       {phase === 'memory' && <MemoryScreen onBegin={startGenerating} />}
       {phase === 'generating' && <GeneratingScreen onDone={() => setPhase('gallery')} />}
       {phase === 'gallery' && (
-        <GalleryScreen photoUrl={memory?.photoUrl ?? null} name={memory?.name} />
+        <GalleryScreen photoUrl={memory?.photoUrl ?? null} name={memory?.name} memoryId={memory?.id} />
       )}
 
       {phase === 'gallery' && (
@@ -367,7 +391,7 @@ export default function HeroPortal() {
           onBack={() => setPhase('gallery')}
           onLogoClick={() => setPhase('prompt')}
           onOpen={(m) => {
-            setMemory({ name: m.name, photoUrl: m.cover });
+            setMemory({ id: m.id, name: m.name, photoUrl: null });
             setPhase('gallery');
           }}
         />
